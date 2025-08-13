@@ -32,11 +32,12 @@ export const InfoValues = styled.p`
   margin: 0;
 `;
 
-export const Actions = styled.div`
+export const Actions = styled.div<{ selectionMode?: boolean }>`
   display: flex;
   gap: 8px;
   margin-top: 16px;
-  justify-content: space-between;
+  justify-content: ${({ selectionMode }) =>
+    selectionMode ? "flex-end" : "space-between"};
   width: 100%;
 `;
 

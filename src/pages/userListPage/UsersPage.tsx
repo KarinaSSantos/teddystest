@@ -1,18 +1,17 @@
-import { useMemo, useState } from "react";
-import { useUsers } from "../hooks/useUsers";
-import UsersList from "../components/list/UsersList";
+import { useMemo, useState, useEffect } from "react";
+import { useUsers } from "../../hooks/useUsers";
+import UsersList from "../../components/userList/UsersList";
 import { useLocation, useNavigate } from "react-router-dom";
-import Modal from "../components/modal/Modal";
-import ConfirmModal from "../components/modal/confirmModal/ConfirmModal";
-import * as S from "./UsersPage.styles";
+import Modal from "../../components/modal/Modal";
+import ConfirmModal from "../../components/modal/confirmModal/ConfirmModal";
+import SearchBar from "../../components/UserFilter/SearchBar/SearchBar";
+import SortSelect from "../../components/UserFilter/SortSelect/SortSelect";
+import type { SortOption } from "../../components/UserFilter/SortSelect/SortSelect";
 
-type SortOption =
-  | "name-asc"
-  | "name-desc"
-  | "salary-asc"
-  | "salary-desc"
-  | "valuation-asc"
-  | "valuation-desc";
+import * as S from "./UsersPage.styles";
+import Pagination from "../../components/pagination/Pagination";
+import PageLimitSelector from "../../components/pageLimitSelect/PageLimitSelector";
+import SearchResultInfo from "../../components/searchResultCount/SearchResultInfo";
 
 export default function UsersPage() {
   const location = useLocation();
@@ -23,6 +22,9 @@ export default function UsersPage() {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(16);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
 
   const {
@@ -33,42 +35,16 @@ export default function UsersPage() {
     deleteMany,
   } = useUsers(page, limit);
 
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [filter, setFilter] = useState("");
+  useEffect(() => {
+    setSelectionMode(selectedIds.size > 0);
+  }, [selectedIds]);
 
   const users = usersQuery.data?.clients ?? [];
   const totalPages = usersQuery.data?.totalPages ?? 1;
   const loading = usersQuery.isPending;
   const error = usersQuery.error as any;
 
-  // Modal criação cliente
-  const [modalOpen, setModalOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newSalary, setNewSalary] = useState("");
-  const [newCompanyValuation, setNewCompanyValuation] = useState("");
-  const [creating, setCreating] = useState(false);
-
-  // Modal edição cliente
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [userToEdit, setUserToEdit] = useState<{
-    id: number;
-    name: string;
-    salary: number;
-    companyValuation: number;
-  } | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editSalary, setEditSalary] = useState("");
-  const [editCompanyValuation, setEditCompanyValuation] = useState("");
-  const [updating, setUpdating] = useState(false);
-
-  // Modal exclusão cliente
-  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<{
-    id: number;
-    name: string;
-  } | null>(null);
-
-  // Filtro texto
+  // Filtragem e ordenação
   const filtered = useMemo(() => {
     if (!filter.trim()) return users;
     const q = filter.toLowerCase();
@@ -77,7 +53,6 @@ export default function UsersPage() {
     );
   }, [users, filter]);
 
-  // Ordenação
   const sortedUsers = useMemo(() => {
     const arr = [...filtered];
     switch (sort) {
@@ -103,44 +78,46 @@ export default function UsersPage() {
     return arr;
   }, [filtered, sort]);
 
-  // Toggle seleção
   const onToggle = (id: number, checked: boolean) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (checked) next.add(id);
-      else next.delete(id);
+      checked ? next.add(id) : next.delete(id);
       return next;
     });
   };
 
-  // Selecionar todos na página
   const onSelectAllOnPage = (select: boolean) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      users.forEach((u) => {
-        if (select) next.add(u.id);
-        else next.delete(u.id);
-      });
+      users.forEach((u) => (select ? next.add(u.id) : next.delete(u.id)));
       return next;
     });
   };
 
-  // Handle criação cliente
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Excluir ${selectedIds.size} usuário(s)?`)) return;
+    await deleteMany(Array.from(selectedIds));
+    clearSelection();
+  };
+
+  // --- Modais de criar ---
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newSalary, setNewSalary] = useState("");
+  const [newCompanyValuation, setNewCompanyValuation] = useState("");
+  const [creating, setCreating] = useState(false);
+
   const handleCreateClient = async () => {
-    if (!newName.trim()) {
-      alert("Digite um nome válido.");
-      return;
-    }
+    if (!newName.trim()) return alert("Digite um nome válido");
     const salaryNum = Number(newSalary.replace(",", "."));
     const valuationNum = Number(newCompanyValuation.replace(",", "."));
-    if (isNaN(salaryNum) || salaryNum < 0) {
-      alert("Digite um salário válido.");
-      return;
-    }
-    if (isNaN(valuationNum) || valuationNum < 0) {
-      alert("Digite um valor de empresa válido.");
-      return;
-    }
+    if (isNaN(salaryNum) || salaryNum < 0)
+      return alert("Digite um salário válido");
+    if (isNaN(valuationNum) || valuationNum < 0)
+      return alert("Digite um valor de empresa válido");
 
     setCreating(true);
     try {
@@ -161,13 +138,15 @@ export default function UsersPage() {
     }
   };
 
-  // Abrir modal edição
-  const openEditModal = (user: {
-    id: number;
-    name: string;
-    salary: number;
-    companyValuation: number;
-  }) => {
+  // --- Modais de editar ---
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<any>(null);
+  const [editName, setEditName] = useState("");
+  const [editSalary, setEditSalary] = useState("");
+  const [editCompanyValuation, setEditCompanyValuation] = useState("");
+  const [updating, setUpdating] = useState(false);
+
+  const openEditModal = (user: any) => {
     setUserToEdit(user);
     setEditName(user.name);
     setEditSalary(String(user.salary));
@@ -175,26 +154,16 @@ export default function UsersPage() {
     setEditModalOpen(true);
   };
 
-  // Salvar edição
   const handleEditUser = async () => {
     if (!userToEdit) return;
-
-    if (!editName.trim()) {
-      alert("Digite um nome válido.");
-      return;
-    }
+    if (!editName.trim()) return alert("Digite um nome válido");
 
     const salaryNum = Number(editSalary.replace(",", "."));
     const valuationNum = Number(editCompanyValuation.replace(",", "."));
-
-    if (isNaN(salaryNum) || salaryNum < 0) {
-      alert("Digite um salário válido.");
-      return;
-    }
-    if (isNaN(valuationNum) || valuationNum < 0) {
-      alert("Digite um valor de empresa válido.");
-      return;
-    }
+    if (isNaN(salaryNum) || salaryNum < 0)
+      return alert("Digite um salário válido");
+    if (isNaN(valuationNum) || valuationNum < 0)
+      return alert("Digite um valor de empresa válido");
 
     setUpdating(true);
     try {
@@ -215,19 +184,20 @@ export default function UsersPage() {
     }
   };
 
-  // Abre modal exclusão
-  const openDeleteModal = (user: { id: number; name: string }) => {
+  // --- Modais de deletar ---
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<any>(null);
+
+  const openDeleteModal = (user: any) => {
     setUserToDelete(user);
     setConfirmDeleteVisible(true);
   };
 
-  // Fecha modal exclusão
   const closeDeleteModal = () => {
     setConfirmDeleteVisible(false);
     setUserToDelete(null);
   };
 
-  // Executa exclusão após confirmação
   const handleDelete = async () => {
     if (!userToDelete) return;
     try {
@@ -243,78 +213,26 @@ export default function UsersPage() {
     }
   };
 
-  // Logout
-  const handleLogout = () => {
-    navigate("/", { replace: true });
-  };
-
-  // Deletar múltiplos com confirm (usa confirm padrão)
-  const handleDeleteSelected = async () => {
-    if (selectedIds.size === 0) return;
-    if (!confirm(`Excluir ${selectedIds.size} usuário(s)?`)) return;
-    await deleteMany(Array.from(selectedIds));
-    setSelectedIds(new Set());
-  };
-
   return (
     <S.Container>
-      <div style={{ marginBottom: 12 }}>
-        Cliente cadastrado: <strong>{newClientName || "Nenhum"}</strong>
-      </div>
-
       <S.Controls>
-        <S.Label>
-          Pesquisar:
-          <S.SearchInput
-            placeholder="Nome ou ID"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          />
-        </S.Label>
-
-        <S.Label>
-          Ordenar por:
-          <S.FilterSelect
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
-          >
-            <option value="name-asc">Nome A-Z</option>
-            <option value="name-desc">Nome Z-A</option>
-            <option value="salary-asc">Salário menor</option>
-            <option value="salary-desc">Salário maior</option>
-            <option value="valuation-asc">Empresa menor</option>
-            <option value="valuation-desc">Empresa maior</option>
-          </S.FilterSelect>
-        </S.Label>
-
-        <S.Button onClick={handleLogout}>Sair</S.Button>
+        <SearchBar
+          value={filter}
+          onChange={setFilter}
+          placeholder="Pesquisar por nome ou ID"
+        />
+        <SortSelect value={sort} onChange={setSort} />
       </S.Controls>
 
       <S.SearchResultContainer>
-        <S.SearchResultTitle>
-          {loading ? (
-            "Carregando clientes..."
-          ) : (
-            <>
-              <span>{filtered.length}</span> clientes encontrados.
-            </>
-          )}
-        </S.SearchResultTitle>
-
-        <S.Label>
-          Clientes por página:
-          <input
-            type="number"
-            min={1}
-            max={100}
-            value={limit}
-            onChange={(e) => {
-              const value = Math.max(1, Math.min(100, Number(e.target.value)));
-              setLimit(value);
-              setPage(1);
-            }}
-          />
-        </S.Label>
+        <SearchResultInfo loading={loading} count={filtered.length} />
+        <PageLimitSelector
+          value={limit}
+          onChange={(v) => {
+            setLimit(v);
+            setPage(1);
+          }}
+        />
       </S.SearchResultContainer>
 
       {error && <p style={{ color: "red" }}>{error.message}</p>}
@@ -322,102 +240,71 @@ export default function UsersPage() {
       <UsersList
         users={sortedUsers}
         selectedIds={selectedIds}
+        selectionMode={selectionMode}
         onToggle={onToggle}
         onSelectAllOnPage={onSelectAllOnPage}
         onEditRequest={(id) => {
           const user = users.find((u) => u.id === id);
-          if (!user) {
-            alert("Usuário não encontrado");
-            return;
-          }
+          if (!user) return alert("Usuário não encontrado");
           openEditModal(user);
-        }}
-        onUpdate={async (id, name, salary, companyValuation) => {
-          try {
-            await updateMutation.mutateAsync({
-              id,
-              name,
-              salary,
-              companyValuation,
-            });
-          } catch {
-            alert("Erro ao atualizar usuário");
-          }
         }}
         onDelete={(id) => {
           const user = users.find((u) => u.id === id);
           if (!user) return alert("Usuário não encontrado");
           openDeleteModal(user);
         }}
+        onRemoveFromSelection={(id) =>
+          setSelectedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          })
+        }
       />
 
-      <S.Button
-        onClick={() => setModalOpen(true)}
-        style={{
-          whiteSpace: "nowrap",
-          background: "none",
-          border: "2px solid ",
-          borderColor: "#EC6724",
-          borderRadius: 4,
-          color: "#EC6724",
-          width: "100%",
-          padding: 14,
-          fontSize: 14,
-          fontWeight: 700,
-        }}
-      >
-        Criar cliente
-      </S.Button>
-
-      <S.Pagination>
-        <S.Button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page <= 1}
-        >
-          Anterior
+      {selectionMode ? (
+        <S.Button onClick={clearSelection}>
+          Limpar clientes selecionados
         </S.Button>
-        <div>
-          {page} ... {totalPages}
-        </div>
-        <S.Button
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page >= totalPages}
-        >
-          Próxima
-        </S.Button>
-      </S.Pagination>
+      ) : (
+        <S.Button onClick={() => setModalOpen(true)}>Criar cliente</S.Button>
+      )}
 
-      {/* Modal para criar cliente */}
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
+
+      {/* Modal Criar */}
       {modalOpen && (
         <Modal title="Criar cliente:" onClose={() => setModalOpen(false)}>
           <S.Input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
+            placeholder="Nome"
             autoFocus
-            placeholder=" Digite o nome:"
           />
           <S.Input
             type="text"
             value={newSalary}
             onChange={(e) => setNewSalary(e.target.value)}
-            placeholder=" Digite o salário:"
+            placeholder="Salário"
           />
-
           <S.Input
             type="text"
             value={newCompanyValuation}
             onChange={(e) => setNewCompanyValuation(e.target.value)}
-            placeholder="Digite o valor da empresa:"
+            placeholder="Valor da empresa"
           />
-
           <S.Button onClick={handleCreateClient} disabled={creating}>
             {creating ? "Criando..." : "Criar Cliente"}
           </S.Button>
         </Modal>
       )}
 
-      {/* Modal para editar cliente */}
+      {/* Modal Editar */}
       {editModalOpen && (
         <Modal title="Editar cliente:" onClose={() => setEditModalOpen(false)}>
           <S.Input
@@ -430,22 +317,21 @@ export default function UsersPage() {
             type="text"
             value={editSalary}
             onChange={(e) => setEditSalary(e.target.value)}
-            placeholder="Ex: 5000,00"
+            placeholder="Salário"
           />
           <S.Input
             type="text"
             value={editCompanyValuation}
             onChange={(e) => setEditCompanyValuation(e.target.value)}
-            placeholder="Ex: 15000,00"
+            placeholder="Valor da empresa"
           />
-
           <S.Button onClick={handleEditUser} disabled={updating}>
             {updating ? "Salvando..." : "Editar cliente"}
           </S.Button>
         </Modal>
       )}
 
-      {/* Modal para confirmar exclusão */}
+      {/* Modal Confirm Delete */}
       <ConfirmModal
         visible={confirmDeleteVisible}
         title="Excluir cliente:"

@@ -5,37 +5,29 @@ import * as S from "./UserCard.styles";
 import editIcon from "../../assets/img/Card/pencil.svg";
 import deleteIcon from "../../assets/img/card/trash.svg";
 import plusIcon from "../../assets/img/Card/plus.svg";
+import minusIcon from "../../assets/img/Card/minus.svg";
 
-export interface Props {
+interface Props {
   user: User;
   checked: boolean;
+  selectionMode?: boolean;
   onToggle: (id: number, checked: boolean) => void;
   onEditRequest: () => void;
-  onUpdate: (
-    id: number,
-    name: string,
-    salary: number,
-    companyValuation: number,
-  ) => Promise<void>;
   onDelete: () => void;
+  onRemoveFromSelection?: () => void;
 }
 
 const UserCard: React.FC<Props> = ({
   user,
   checked,
+  selectionMode = false,
   onToggle,
   onEditRequest,
   onDelete,
+  onRemoveFromSelection,
 }) => {
   return (
     <S.Card selected={checked}>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onToggle(user.id, e.target.checked)}
-        onClick={(e) => e.stopPropagation()}
-        hidden
-      />
       <S.Info>
         <S.UserName>{user.name}</S.UserName>
         <S.InfoValues>
@@ -53,16 +45,25 @@ const UserCard: React.FC<Props> = ({
           })}
         </S.InfoValues>
       </S.Info>
-      <S.Actions>
-        <S.IconButton onClick={onEditRequest}>
-          <img src={plusIcon} alt="Adicionar" />
-        </S.IconButton>
-        <S.IconButton onClick={onEditRequest}>
-          <img src={editIcon} alt="Editar" />
-        </S.IconButton>
-        <S.IconButton onClick={onDelete}>
-          <img src={deleteIcon} alt="Excluir" />
-        </S.IconButton>
+
+      <S.Actions selectionMode={selectionMode && checked}>
+        {selectionMode ? (
+          <S.IconButton onClick={onRemoveFromSelection}>
+            <img src={minusIcon} alt="Remover da seleção" />
+          </S.IconButton>
+        ) : (
+          <>
+            <S.IconButton onClick={() => onToggle(user.id, !checked)}>
+              <img src={plusIcon} alt="Adicionar à seleção" />
+            </S.IconButton>
+            <S.IconButton onClick={onEditRequest}>
+              <img src={editIcon} alt="Editar" />
+            </S.IconButton>
+            <S.IconButton onClick={onDelete}>
+              <img src={deleteIcon} alt="Excluir" />
+            </S.IconButton>
+          </>
+        )}
       </S.Actions>
     </S.Card>
   );

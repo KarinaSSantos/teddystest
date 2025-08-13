@@ -10,19 +10,23 @@ export const Container = styled.div`
 
 export const Controls = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 20px;
   align-items: center;
   margin-bottom: 12px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 `;
 
 export const Button = styled.button`
-  padding: 8px 12px;
+  padding: 12px;
   border-radius: 6px;
-  border: 0;
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
+  border: solid 2px ${({ theme }) => theme.colors.primary};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 900;
   cursor: pointer;
+  width: 100%;
+  margin-bottom: 20px;
 `;
 
 export const Label = styled.label`
@@ -56,7 +60,8 @@ export const ModalButton = styled.button`
 export const SearchResultContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  margin: 20px 0;
 `;
 
 export const SearchResultTitle = styled.p`
