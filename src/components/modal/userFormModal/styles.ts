@@ -34,7 +34,7 @@ export const ModalHeader = styled.div`
     font-size: 24px;
     line-height: 1;
     border: none;
-    background: none;
+    background: unset;
     cursor: pointer;
   }
 `;

@@ -1,7 +1,6 @@
-// SelectAllCheckbox.tsx
 import React from "react";
 import type { User } from "../../types/user";
-import * as S from "../userList/Userslist.styles";
+import * as S from "../userList/styles";
 
 interface Props {
   users: User[];

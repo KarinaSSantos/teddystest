@@ -1,11 +1,14 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  padding: 20px 0;
-  font-family: Inter, sans-serif;
   background-color: ${({ theme }) => theme.colors.background};
-  margin: 0 auto;
+  margin: 0 auto 20px auto;
   max-width: 90%;
+
+  @media (min-width: 768px) {
+    padding: 20px 0;
+    margin-top: 110px;
+  }
 `;
 
 export const Controls = styled.div`
@@ -14,14 +17,14 @@ export const Controls = styled.div`
   align-items: center;
   margin-bottom: 12px;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
 `;
 
 export const Button = styled.button`
   padding: 12px;
   border-radius: 6px;
   border: solid 2px ${({ theme }) => theme.colors.primary};
-  background: transparent;
+  background-color: unset;
   color: ${({ theme }) => theme.colors.primary};
   font-weight: 900;
   cursor: pointer;

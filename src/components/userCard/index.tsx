@@ -1,6 +1,6 @@
 import React from "react";
 import type { User } from "../../types/user";
-import * as S from "./UserCard.styles";
+import * as S from "./styles";
 
 import editIcon from "../../assets/img/Card/pencil.svg";
 import deleteIcon from "../../assets/img/card/trash.svg";

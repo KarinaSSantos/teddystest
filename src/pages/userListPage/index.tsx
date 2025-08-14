@@ -1,43 +1,33 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useUsers } from "../../hooks/useUsers";
-import UsersList from "../../components/userList/UsersList";
-import { useLocation, useNavigate } from "react-router-dom";
+import UsersList from "../../components/userList";
 import Modal from "../../components/modal/Modal";
-import ConfirmModal from "../../components/modal/confirmModal/ConfirmModal";
-import SearchBar from "../../components/UserFilter/SearchBar/SearchBar";
-import SortSelect from "../../components/UserFilter/SortSelect/SortSelect";
-import type { SortOption } from "../../components/UserFilter/SortSelect/SortSelect";
+import ConfirmModal from "../../components/modal/confirmModal";
+import SearchBar from "../../components/UserFilter/SearchBar";
+import SortSelect from "../../components/UserFilter/SortSelect";
+import type { SortOption } from "../../components/UserFilter/SortSelect";
 
-import * as S from "./UsersPage.styles";
-import Pagination from "../../components/pagination/Pagination";
-import PageLimitSelector from "../../components/pageLimitSelect/PageLimitSelector";
-import SearchResultInfo from "../../components/searchResultCount/SearchResultInfo";
+import * as S from "./styles";
+import Pagination from "../../components/pagination";
+import PageLimitSelector from "../../components/pageLimitSelect";
+import SearchResultInfo from "../../components/searchResultCount";
+import { useUserContext } from "../../contexts/UserContext";
 
 export default function UsersPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const newClientName =
-    (location.state as { newClientName?: string })?.newClientName || "";
-
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(16);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [selectionMode, setSelectionMode] = useState(false);
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
 
-  const {
-    usersQuery,
-    createMutation,
-    updateMutation,
-    deleteMutation,
-    deleteMany,
-  } = useUsers(page, limit);
+  const { usersQuery, createMutation, updateMutation, deleteMutation } =
+    useUsers(page, limit);
 
-  useEffect(() => {
-    setSelectionMode(selectedIds.size > 0);
-  }, [selectedIds]);
+  const {
+    selectedClients,
+    addClientToSelection,
+    removeClientFromSelection,
+    clearSelection,
+  } = useUserContext();
 
   const users = usersQuery.data?.clients ?? [];
   const totalPages = usersQuery.data?.totalPages ?? 1;
@@ -78,32 +68,30 @@ export default function UsersPage() {
     return arr;
   }, [filtered, sort]);
 
+  // --- Seleção via contexto ---
+  const selectedIds = new Set(selectedClients.map((c) => c.id));
+  const selectionMode = selectedIds.size > 0;
+
   const onToggle = (id: number, checked: boolean) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      checked ? next.add(id) : next.delete(id);
-      return next;
-    });
+    const user = users.find((u) => u.id === id);
+    if (!user) return;
+
+    if (checked) {
+      addClientToSelection(user);
+    } else {
+      removeClientFromSelection(id);
+    }
   };
 
   const onSelectAllOnPage = (select: boolean) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      users.forEach((u) => (select ? next.add(u.id) : next.delete(u.id)));
-      return next;
-    });
+    if (select) {
+      users.forEach((u) => addClientToSelection(u));
+    } else {
+      users.forEach((u) => removeClientFromSelection(u.id));
+    }
   };
 
-  const clearSelection = () => setSelectedIds(new Set());
-
-  const handleDeleteSelected = async () => {
-    if (selectedIds.size === 0) return;
-    if (!confirm(`Excluir ${selectedIds.size} usuário(s)?`)) return;
-    await deleteMany(Array.from(selectedIds));
-    clearSelection();
-  };
-
-  // --- Modais de criar ---
+  // --- Modal de criação ---
   const [modalOpen, setModalOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newSalary, setNewSalary] = useState("");
@@ -138,7 +126,7 @@ export default function UsersPage() {
     }
   };
 
-  // --- Modais de editar ---
+  // --- Modal de edição ---
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState<any>(null);
   const [editName, setEditName] = useState("");
@@ -184,7 +172,7 @@ export default function UsersPage() {
     }
   };
 
-  // --- Modais de deletar ---
+  // --- Modal de deletar ---
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any>(null);
 
@@ -202,11 +190,7 @@ export default function UsersPage() {
     if (!userToDelete) return;
     try {
       await deleteMutation.mutateAsync(userToDelete.id);
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(userToDelete.id);
-        return next;
-      });
+      removeClientFromSelection(userToDelete.id);
       closeDeleteModal();
     } catch {
       alert("Erro ao excluir cliente");
@@ -253,17 +237,15 @@ export default function UsersPage() {
           if (!user) return alert("Usuário não encontrado");
           openDeleteModal(user);
         }}
-        onRemoveFromSelection={(id) =>
-          setSelectedIds((prev) => {
-            const next = new Set(prev);
-            next.delete(id);
-            return next;
-          })
-        }
+        onRemoveFromSelection={(id) => removeClientFromSelection(id)}
       />
 
       {selectionMode ? (
-        <S.Button onClick={clearSelection}>
+        <S.Button
+          onClick={() => {
+            clearSelection();
+          }}
+        >
           Limpar clientes selecionados
         </S.Button>
       ) : (

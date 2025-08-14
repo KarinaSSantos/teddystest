@@ -1,5 +1,5 @@
 import React from "react";
-import * as S from "./SortSelect.styles";
+import * as S from "./styles";
 
 export type SortOption =
   | "name-asc"

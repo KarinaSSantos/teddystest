@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import { Label, Input } from "./styles";
 
 interface Props {
   value: number;
@@ -7,21 +7,6 @@ interface Props {
   max?: number;
   onChange: (value: number) => void;
 }
-
-const Label = styled.label`
-  font-weight: 400;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const Input = styled.input`
-  width: 60px;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-`;
 
 const PageLimitSelector: React.FC<Props> = ({
   value,

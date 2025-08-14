@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import * as S from "./UserFormModal.styles";
+import * as S from "./styles";
 
 export interface UserFormModalProps {
   visible: boolean;

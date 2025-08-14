@@ -35,7 +35,7 @@ export const Title = styled.h2`
 `;
 
 export const CloseButton = styled.button`
-  background: none;
+  background: unset;
   border: none;
   font-size: 1.8rem;
   line-height: 1;

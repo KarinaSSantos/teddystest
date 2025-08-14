@@ -1,5 +1,5 @@
 import React from "react";
-import * as S from "./SearchBar.styles";
+import * as S from "./styles";
 
 interface Props {
   value: string;
