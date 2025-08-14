@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { useUsers } from "../../hooks/useUsers";
 import UsersList from "../../components/userList";
-import Modal from "../../components/modal/Modal";
-import ConfirmModal from "../../components/modal/confirmModal";
+import Modal from "../../components/modal/modalBase";
 import SearchBar from "../../components/UserFilter/SearchBar";
 import SortSelect from "../../components/UserFilter/SortSelect";
 import type { SortOption } from "../../components/UserFilter/SortSelect";
 
 import * as S from "./styles";
+import * as M from "../../components/modal/modalBase/styles";
+
 import Pagination from "../../components/pagination";
 import PageLimitSelector from "../../components/pageLimitSelect";
 import SearchResultInfo from "../../components/searchResultCount";
@@ -34,7 +35,6 @@ export default function UsersPage() {
   const loading = usersQuery.isPending;
   const error = usersQuery.error as any;
 
-  // Filtragem e ordenação
   const filtered = useMemo(() => {
     if (!filter.trim()) return users;
     const q = filter.toLowerCase();
@@ -68,30 +68,22 @@ export default function UsersPage() {
     return arr;
   }, [filtered, sort]);
 
-  // --- Seleção via contexto ---
   const selectedIds = new Set(selectedClients.map((c) => c.id));
   const selectionMode = selectedIds.size > 0;
 
   const onToggle = (id: number, checked: boolean) => {
     const user = users.find((u) => u.id === id);
     if (!user) return;
-
-    if (checked) {
-      addClientToSelection(user);
-    } else {
-      removeClientFromSelection(id);
-    }
+    checked ? addClientToSelection(user) : removeClientFromSelection(id);
   };
 
   const onSelectAllOnPage = (select: boolean) => {
-    if (select) {
-      users.forEach((u) => addClientToSelection(u));
-    } else {
-      users.forEach((u) => removeClientFromSelection(u.id));
-    }
+    users.forEach((u) =>
+      select ? addClientToSelection(u) : removeClientFromSelection(u.id),
+    );
   };
 
-  // --- Modal de criação ---
+  // --- Criar cliente ---
   const [modalOpen, setModalOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newSalary, setNewSalary] = useState("");
@@ -126,7 +118,7 @@ export default function UsersPage() {
     }
   };
 
-  // --- Modal de edição ---
+  // --- Editar cliente ---
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState<any>(null);
   const [editName, setEditName] = useState("");
@@ -145,13 +137,11 @@ export default function UsersPage() {
   const handleEditUser = async () => {
     if (!userToEdit) return;
     if (!editName.trim()) return alert("Digite um nome válido");
-
     const salaryNum = Number(editSalary.replace(",", "."));
     const valuationNum = Number(editCompanyValuation.replace(",", "."));
-    if (isNaN(salaryNum) || salaryNum < 0)
-      return alert("Digite um salário válido");
+    if (isNaN(salaryNum) || salaryNum < 0) return alert("Salário inválido");
     if (isNaN(valuationNum) || valuationNum < 0)
-      return alert("Digite um valor de empresa válido");
+      return alert("Valor da empresa inválido");
 
     setUpdating(true);
     try {
@@ -172,7 +162,7 @@ export default function UsersPage() {
     }
   };
 
-  // --- Modal de deletar ---
+  // --- Deletar cliente ---
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any>(null);
 
@@ -180,12 +170,10 @@ export default function UsersPage() {
     setUserToDelete(user);
     setConfirmDeleteVisible(true);
   };
-
   const closeDeleteModal = () => {
     setConfirmDeleteVisible(false);
     setUserToDelete(null);
   };
-
   const handleDelete = async () => {
     if (!userToDelete) return;
     try {
@@ -241,11 +229,7 @@ export default function UsersPage() {
       />
 
       {selectionMode ? (
-        <S.Button
-          onClick={() => {
-            clearSelection();
-          }}
-        >
+        <S.Button onClick={clearSelection}>
           Limpar clientes selecionados
         </S.Button>
       ) : (
@@ -259,74 +243,87 @@ export default function UsersPage() {
       />
 
       {/* Modal Criar */}
-      {modalOpen && (
-        <Modal title="Criar cliente:" onClose={() => setModalOpen(false)}>
-          <S.Input
+      <Modal
+        visible={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Criar cliente:"
+      >
+        <M.Content>
+          <M.Input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Nome"
             autoFocus
           />
-          <S.Input
-            type="text"
+          <M.Input
+            type="number"
             value={newSalary}
             onChange={(e) => setNewSalary(e.target.value)}
             placeholder="Salário"
           />
-          <S.Input
-            type="text"
+          <M.Input
+            type="number"
             value={newCompanyValuation}
             onChange={(e) => setNewCompanyValuation(e.target.value)}
             placeholder="Valor da empresa"
           />
-          <S.Button onClick={handleCreateClient} disabled={creating}>
+          <M.ConfirmButton onClick={handleCreateClient} disabled={creating}>
             {creating ? "Criando..." : "Criar Cliente"}
-          </S.Button>
-        </Modal>
-      )}
+          </M.ConfirmButton>
+        </M.Content>
+      </Modal>
 
       {/* Modal Editar */}
-      {editModalOpen && (
-        <Modal title="Editar cliente:" onClose={() => setEditModalOpen(false)}>
-          <S.Input
+      <Modal
+        visible={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        title="Editar cliente:"
+      >
+        <M.Content>
+          <M.Input
             type="text"
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             autoFocus
           />
-          <S.Input
-            type="text"
+          <M.Input
+            type="number"
             value={editSalary}
             onChange={(e) => setEditSalary(e.target.value)}
             placeholder="Salário"
           />
-          <S.Input
-            type="text"
+          <M.Input
+            type="number"
             value={editCompanyValuation}
             onChange={(e) => setEditCompanyValuation(e.target.value)}
             placeholder="Valor da empresa"
           />
-          <S.Button onClick={handleEditUser} disabled={updating}>
+          <M.ConfirmButton onClick={handleEditUser} disabled={updating}>
             {updating ? "Salvando..." : "Editar cliente"}
-          </S.Button>
-        </Modal>
-      )}
+          </M.ConfirmButton>
+        </M.Content>
+      </Modal>
 
       {/* Modal Confirm Delete */}
-      <ConfirmModal
+      <Modal
         visible={confirmDeleteVisible}
+        onClose={closeDeleteModal}
         title="Excluir cliente:"
-        message={
+      >
+        <M.Content>
           <p>
             Você está prestes a excluir o cliente:{" "}
             <strong>{userToDelete?.name}</strong>
           </p>
-        }
-        onClose={closeDeleteModal}
-        onConfirm={handleDelete}
-        loading={deleteMutation.isPending}
-      />
+          <M.ConfirmButton
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? "Excluindo..." : "Excluir cliente"}
+          </M.ConfirmButton>
+        </M.Content>
+      </Modal>
     </S.Container>
   );
 }

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import * as S from "./styles";
+import React from "react";
+import Modal from "../modalBase";
+import * as S from "../modalBase/styles";
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -18,44 +19,13 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   loading = false,
 }) => {
-  const [show, setShow] = useState(visible);
-
-  useEffect(() => {
-    if (visible) {
-      setShow(true);
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-      const timeout = setTimeout(() => setShow(false), 200); // esperar animação
-      return () => clearTimeout(timeout);
-    }
-  }, [visible]);
-
-  if (!show) return null;
-
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
-    <S.ModalOverlay visible={visible} onClick={handleOverlayClick}>
-      <S.ModalContent visible={visible}>
-        <S.ModalHeader>
-          <h3>{title}</h3>
-          <button onClick={onClose} aria-label="Fechar">
-            ×
-          </button>
-        </S.ModalHeader>
-        <S.ModalBody>{message}</S.ModalBody>
-        <S.ModalFooter>
-          <S.ConfirmButton onClick={onConfirm} disabled={loading}>
-            {loading ? "Excluindo..." : "Excluir cliente"}
-          </S.ConfirmButton>
-        </S.ModalFooter>
-      </S.ModalContent>
-    </S.ModalOverlay>
+    <Modal visible={visible} title={title} onClose={onClose}>
+      {message}
+      <S.ConfirmButton onClick={onConfirm} disabled={loading}>
+        {loading ? "Excluindo..." : "Excluir cliente"}
+      </S.ConfirmButton>
+    </Modal>
   );
 };
 

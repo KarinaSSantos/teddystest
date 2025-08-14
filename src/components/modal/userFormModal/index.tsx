@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import * as S from "./styles";
-
+import Modal from "../modalBase";
+import * as S from "../modalBase/styles";
 export interface UserFormModalProps {
   visible: boolean;
   onClose: () => void;
@@ -57,37 +57,33 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     }
   };
 
-  if (!visible) return null;
-
   return (
-    <S.ModalOverlay>
-      <S.ModalContent>
-        <S.ModalHeader>
-          <h3>{title}</h3>
-          <button onClick={onClose} aria-label="Fechar">
-            ×
-          </button>
-        </S.ModalHeader>
-        <S.ModalBody>
-          <input value={name} onChange={(e) => setName(e.target.value)} />
-          <input
-            type="number"
-            value={salary}
-            onChange={(e) => setSalary(e.target.value)}
-          />
-          <input
-            type="number"
-            value={companyValuation}
-            onChange={(e) => setCompanyValuation(e.target.value)}
-          />
-        </S.ModalBody>
-        <S.ModalFooter>
-          <button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Salvando..." : "Salvar"}
-          </button>
-        </S.ModalFooter>
-      </S.ModalContent>
-    </S.ModalOverlay>
+    <Modal visible={visible} onClose={onClose} title={title}>
+      <S.Content>
+        <S.Input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nome"
+          autoFocus
+        />
+        <S.Input
+          type="number"
+          value={salary}
+          onChange={(e) => setSalary(e.target.value)}
+          placeholder="Salário"
+        />
+        <S.Input
+          type="number"
+          value={companyValuation}
+          onChange={(e) => setCompanyValuation(e.target.value)}
+          placeholder="Valor da empresa"
+        />
+        <S.ConfirmButton onClick={handleSubmit} disabled={loading}>
+          {loading ? "Salvando..." : "Salvar"}
+        </S.ConfirmButton>
+      </S.Content>
+    </Modal>
   );
 };
 

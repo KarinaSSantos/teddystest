@@ -14,7 +14,7 @@ export default function SelectedUsersPage() {
   if (selectedClients.length === 0) {
     return (
       <S.Container>
-        <h2>Nenhum cliente selecionado.</h2>
+        <p>Nenhum cliente selecionado.</p>
         <S.Button
           onClick={() => {
             navigate("/users");

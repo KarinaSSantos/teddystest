@@ -25,10 +25,11 @@ export const GlobalStyles = createGlobalStyle`
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     line-height: 1.2;
+    margin-bottom: 1rem;
   }
 
   h1 { font-size: clamp(1.75rem, 4vw, 2.25rem); }
-  h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+  h2 { font-size: clamp(1rem, 3vw, 1.5rem); }
   h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
   h4 { font-size: clamp(1.125rem, 2vw, 1.5rem); }
   h5 { font-size: clamp(1rem, 1.8vw, 1.25rem); }
