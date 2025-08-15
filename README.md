@@ -54,6 +54,7 @@ src/
 ├── Dockerfile         # Dockerfile para produção
 └── docker-compose.yml # Docker Compose para desenvolvimento e produção
 
+```
 ---
 
 ## ⚙️ Requisitos
