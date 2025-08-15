@@ -20,7 +20,7 @@ const Modal: React.FC<ModalProps> = ({ visible, title, onClose, children }) => {
     } else if (show) {
       setAnimateOut(true);
       document.body.style.overflow = "";
-      const timeout = setTimeout(() => setShow(false), 200); // tempo da animação
+      const timeout = setTimeout(() => setShow(false), 200);
       return () => clearTimeout(timeout);
     }
   }, [visible, show]);

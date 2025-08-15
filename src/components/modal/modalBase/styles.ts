@@ -30,7 +30,7 @@ export const Container = styled.div<{ visible?: boolean }>`
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+
   animation: ${({ visible }) => (visible ? fadeInScale : fadeOutScale)} 0.2s
     ease forwards;
 `;

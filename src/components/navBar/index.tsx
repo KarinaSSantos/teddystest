@@ -36,7 +36,6 @@ const NavBar: React.FC = () => {
             active={location.pathname === "/users"}
             onClick={() => navigate("/users")}
           >
-            <UsersIcon fill={getColor("/users")} />
             Clientes
           </S.NavBarItem>
 
@@ -44,7 +43,6 @@ const NavBar: React.FC = () => {
             active={location.pathname === "/selected"}
             onClick={() => navigate("/selected")}
           >
-            <SelectedUsersIcon fill={getColor("/selected")} />
             Clientes Selecionados ({selectedCount})
           </S.NavBarItem>
 

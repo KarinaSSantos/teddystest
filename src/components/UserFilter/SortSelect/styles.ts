@@ -1,11 +1,18 @@
 import styled from "styled-components";
 
-export const Select = styled.select`
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  font-family: ${({ theme }) => theme.font.family};
+export const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 180px;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
+`;
+
+export const Label = styled.span`
   font-size: 14px;
-  cursor: pointer;
-  margin-left: 8px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textLight};
 `;

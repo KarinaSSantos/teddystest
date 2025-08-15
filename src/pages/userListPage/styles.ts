@@ -4,6 +4,10 @@ export const Container = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   margin: 0 auto 20px auto;
   max-width: 90%;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 
   @media (min-width: 768px) {
     padding: 20px 0;
@@ -16,8 +20,12 @@ export const Controls = styled.div`
   gap: 20px;
   align-items: center;
   margin-bottom: 12px;
+  justify-content: flex-end;
   flex-wrap: wrap;
-  justify-content: flex-start;
+
+  @media (min-width: 480px) {
+    flex-wrap: nowrap;
+  }
 `;
 
 export const Button = styled.button`
@@ -64,7 +72,6 @@ export const SearchResultContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 20px 0;
 `;
 
 export const SearchResultTitle = styled.p`

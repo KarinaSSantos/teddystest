@@ -8,7 +8,7 @@ export const Card = styled.div<{ selected?: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: clamp(10rem, 40%, 18rem);
+  width: 100%;
   min-height: clamp(7rem, 15vw, 8.625rem);
   box-shadow: 0px 0px 0.25rem 0px #0000001a;
   text-align: center;
@@ -18,11 +18,6 @@ export const Card = styled.div<{ selected?: boolean }>`
 
   &:hover {
     box-shadow: 0px 0px 0.5rem 0px #00000033;
-  }
-
-  @media (min-width: 768px) {
-    width: 285px;
-    min-height: 138px;
   }
 `;
 

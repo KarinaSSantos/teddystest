@@ -1,14 +1,13 @@
 import { useMemo, useState } from "react";
 import { useUsers } from "../../hooks/useUsers";
 import UsersList from "../../components/userList";
-import Modal from "../../components/modal/modalBase";
+import ClientModal from "../../components/modal/userFormModal";
+import ConfirmModal from "../../components/modal/confirmModal";
 import SearchBar from "../../components/UserFilter/SearchBar";
 import SortSelect from "../../components/UserFilter/SortSelect";
 import type { SortOption } from "../../components/UserFilter/SortSelect";
 
 import * as S from "./styles";
-import * as M from "../../components/modal/modalBase/styles";
-
 import Pagination from "../../components/pagination";
 import PageLimitSelector from "../../components/pageLimitSelect";
 import SearchResultInfo from "../../components/searchResultCount";
@@ -83,86 +82,41 @@ export default function UsersPage() {
     );
   };
 
-  // --- Criar cliente ---
-  const [modalOpen, setModalOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newSalary, setNewSalary] = useState("");
-  const [newCompanyValuation, setNewCompanyValuation] = useState("");
-  const [creating, setCreating] = useState(false);
+  const [clientModalVisible, setClientModalVisible] = useState(false);
+  const [clientToEdit, setClientToEdit] = useState<any>(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
-  const handleCreateClient = async () => {
-    if (!newName.trim()) return alert("Digite um nome válido");
-    const salaryNum = Number(newSalary.replace(",", "."));
-    const valuationNum = Number(newCompanyValuation.replace(",", "."));
-    if (isNaN(salaryNum) || salaryNum < 0)
-      return alert("Digite um salário válido");
-    if (isNaN(valuationNum) || valuationNum < 0)
-      return alert("Digite um valor de empresa válido");
-
-    setCreating(true);
-    try {
-      await createMutation.mutateAsync({
-        name: newName.trim(),
-        salary: salaryNum,
-        companyValuation: valuationNum,
-      });
-      setNewName("");
-      setNewSalary("");
-      setNewCompanyValuation("");
-      setModalOpen(false);
-      setPage(1);
-    } catch (err: any) {
-      alert("Erro ao criar cliente: " + (err?.message || "Erro desconhecido"));
-    } finally {
-      setCreating(false);
-    }
+  const openCreateModal = () => {
+    setClientToEdit(null);
+    setClientModalVisible(true);
   };
-
-  // --- Editar cliente ---
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [userToEdit, setUserToEdit] = useState<any>(null);
-  const [editName, setEditName] = useState("");
-  const [editSalary, setEditSalary] = useState("");
-  const [editCompanyValuation, setEditCompanyValuation] = useState("");
-  const [updating, setUpdating] = useState(false);
 
   const openEditModal = (user: any) => {
-    setUserToEdit(user);
-    setEditName(user.name);
-    setEditSalary(String(user.salary));
-    setEditCompanyValuation(String(user.companyValuation));
-    setEditModalOpen(true);
+    setClientToEdit(user);
+    setClientModalVisible(true);
   };
 
-  const handleEditUser = async () => {
-    if (!userToEdit) return;
-    if (!editName.trim()) return alert("Digite um nome válido");
-    const salaryNum = Number(editSalary.replace(",", "."));
-    const valuationNum = Number(editCompanyValuation.replace(",", "."));
-    if (isNaN(salaryNum) || salaryNum < 0) return alert("Salário inválido");
-    if (isNaN(valuationNum) || valuationNum < 0)
-      return alert("Valor da empresa inválido");
-
-    setUpdating(true);
+  const handleSubmitClient = async (data: {
+    name: string;
+    salary: number;
+    companyValuation: number;
+  }) => {
+    setModalLoading(true);
     try {
-      await updateMutation.mutateAsync({
-        id: userToEdit.id,
-        name: editName.trim(),
-        salary: salaryNum,
-        companyValuation: valuationNum,
-      });
-      setEditModalOpen(false);
-      setUserToEdit(null);
+      if (clientToEdit) {
+        await updateMutation.mutateAsync({ id: clientToEdit.id, ...data });
+      } else {
+        await createMutation.mutateAsync(data);
+        setPage(1);
+      }
+      setClientModalVisible(false);
     } catch (err: any) {
-      alert(
-        "Erro ao atualizar usuário: " + (err?.message ?? "Erro desconhecido"),
-      );
+      alert("Erro: " + (err?.message ?? "Erro desconhecido"));
     } finally {
-      setUpdating(false);
+      setModalLoading(false);
     }
   };
 
-  // --- Deletar cliente ---
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any>(null);
 
@@ -170,16 +124,12 @@ export default function UsersPage() {
     setUserToDelete(user);
     setConfirmDeleteVisible(true);
   };
-  const closeDeleteModal = () => {
-    setConfirmDeleteVisible(false);
-    setUserToDelete(null);
-  };
   const handleDelete = async () => {
     if (!userToDelete) return;
     try {
       await deleteMutation.mutateAsync(userToDelete.id);
       removeClientFromSelection(userToDelete.id);
-      closeDeleteModal();
+      setConfirmDeleteVisible(false);
     } catch {
       alert("Erro ao excluir cliente");
     }
@@ -193,7 +143,7 @@ export default function UsersPage() {
           onChange={setFilter}
           placeholder="Pesquisar por nome ou ID"
         />
-        <SortSelect value={sort} onChange={setSort} />
+        <SortSelect value={sort} onChange={(val) => val && setSort(val)} />
       </S.Controls>
 
       <S.SearchResultContainer>
@@ -233,7 +183,7 @@ export default function UsersPage() {
           Limpar clientes selecionados
         </S.Button>
       ) : (
-        <S.Button onClick={() => setModalOpen(true)}>Criar cliente</S.Button>
+        <S.Button onClick={openCreateModal}>Criar cliente</S.Button>
       )}
 
       <Pagination
@@ -242,88 +192,39 @@ export default function UsersPage() {
         onPageChange={setPage}
       />
 
-      {/* Modal Criar */}
-      <Modal
-        visible={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Criar cliente:"
-      >
-        <M.Content>
-          <M.Input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Nome"
-            autoFocus
-          />
-          <M.Input
-            type="number"
-            value={newSalary}
-            onChange={(e) => setNewSalary(e.target.value)}
-            placeholder="Salário"
-          />
-          <M.Input
-            type="number"
-            value={newCompanyValuation}
-            onChange={(e) => setNewCompanyValuation(e.target.value)}
-            placeholder="Valor da empresa"
-          />
-          <M.ConfirmButton onClick={handleCreateClient} disabled={creating}>
-            {creating ? "Criando..." : "Criar Cliente"}
-          </M.ConfirmButton>
-        </M.Content>
-      </Modal>
+      {/* Modal criar/editar */}
+      <ClientModal
+        visible={clientModalVisible}
+        onClose={() => setClientModalVisible(false)}
+        title={clientToEdit ? "Editar cliente" : "Criar cliente"}
+        initialData={
+          clientToEdit
+            ? {
+                name: clientToEdit.name,
+                salary: clientToEdit.salary,
+                companyValuation: clientToEdit.companyValuation,
+              }
+            : undefined
+        }
+        onSubmit={handleSubmitClient}
+        loading={modalLoading}
+        mode={clientToEdit ? "edit" : "create"}
+      />
 
-      {/* Modal Editar */}
-      <Modal
-        visible={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title="Editar cliente:"
-      >
-        <M.Content>
-          <M.Input
-            type="text"
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            autoFocus
-          />
-          <M.Input
-            type="number"
-            value={editSalary}
-            onChange={(e) => setEditSalary(e.target.value)}
-            placeholder="Salário"
-          />
-          <M.Input
-            type="number"
-            value={editCompanyValuation}
-            onChange={(e) => setEditCompanyValuation(e.target.value)}
-            placeholder="Valor da empresa"
-          />
-          <M.ConfirmButton onClick={handleEditUser} disabled={updating}>
-            {updating ? "Salvando..." : "Editar cliente"}
-          </M.ConfirmButton>
-        </M.Content>
-      </Modal>
-
-      {/* Modal Confirm Delete */}
-      <Modal
+      {/* Modal excluir */}
+      <ConfirmModal
         visible={confirmDeleteVisible}
-        onClose={closeDeleteModal}
-        title="Excluir cliente:"
-      >
-        <M.Content>
+        title="Excluir cliente"
+        message={
           <p>
             Você está prestes a excluir o cliente:{" "}
             <strong>{userToDelete?.name}</strong>
           </p>
-          <M.ConfirmButton
-            onClick={handleDelete}
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? "Excluindo..." : "Excluir cliente"}
-          </M.ConfirmButton>
-        </M.Content>
-      </Modal>
+        }
+        onClose={() => setConfirmDeleteVisible(false)}
+        onConfirm={handleDelete}
+        loading={deleteMutation.isPending}
+      />
     </S.Container>
   );
 }

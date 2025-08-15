@@ -13,6 +13,7 @@ declare module "styled-components" {
       error: string;
       warning: string;
       navmobile: string;
+      textLight: string;
     };
     font: {
       family: string;
