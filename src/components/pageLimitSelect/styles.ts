@@ -18,12 +18,6 @@ export const Input = styled.input`
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    outline-offset: 2px;
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-
   &::placeholder {
     color: ${({ theme }) => theme.colors.text};
     opacity: 0.6;
