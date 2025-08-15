@@ -48,11 +48,16 @@ export const MobileNavBar = styled.div`
   display: none;
 
   @media (max-width: 768px) {
-    display: grid;
-    justify-items: center;
-    grid-template-columns: 1fr 5fr;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
     height: 10vh;
-    align-content: center;
+    background-color: #fff;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
   }
 `;
 
@@ -62,38 +67,71 @@ export const HamburgerButton = styled.button`
   cursor: pointer;
 `;
 
-export const MobileOverlay = styled.div`
+export const MobileLogoTop = styled.img`
+  height: 40px;
+  margin: 0 auto;
+`;
+
+export const MobileContentWrapper = styled.div<{
+  $isOpen: boolean;
+  $closing: boolean;
+}>`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   z-index: 999;
   display: flex;
   flex-direction: column;
+  background-color: #fff;
+  transform: ${({ $isOpen, $closing }) =>
+    $isOpen && !$closing
+      ? "translateX(0)"
+      : $closing
+        ? "translateX(-100%)"
+        : "translateX(100%)"};
+  transition: transform 0.4s ease;
 `;
 
 export const MobileTop = styled.div`
-  height: 10vh;
-  background-color: rgba(0, 0, 0, 0.6);
+  height: 20vh;
+  background-color: #363636;
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 1rem;
+`;
+
+export const MobileLogo = styled.img`
+  height: 60px;
 `;
 
 export const BackButton = styled.button`
+  position: absolute;
+  top: 18vh;
+  right: 1rem;
   width: 40px;
   height: 40px;
   border-radius: 50%;
   background-color: #000;
   border: none;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+
+  svg {
+    max-width: 60%;
+    max-height: 60%;
+    height: auto;
+    width: auto;
+  }
 `;
 
 export const MobileContent = styled.div`
-  height: 70%;
-  background-color: #f5f5f5;
+  flex: 1;
+  background-color: #fff;
   display: flex;
   flex-direction: column;
   padding: 3rem 2rem;
@@ -116,7 +154,7 @@ export const MobileNavBarItem = styled.div<{ active?: boolean }>`
   img {
     height: 20px;
     width: 20px;
-    fill: ${({ active, theme }) => (active ? theme.colors.primary : "#0f0f0f")};
+    fill: ${({ active }) => (active ? "#fff" : "#0f0f0f")};
     transition: fill 0.2s ease-in-out;
   }
 

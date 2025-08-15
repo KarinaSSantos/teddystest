@@ -10,13 +10,12 @@ import { ReactComponent as HamburgerIcon } from "../../assets/img/NavBar/menu-sv
 import { ReactComponent as BackArrowIcon } from "../../assets/img/NavBar/left-arrow.svg";
 
 import Logo from "../../assets/img/logo-teddy.svg";
-import { useTheme } from "styled-components";
 
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const theme = useTheme();
+  const [closing, setClosing] = useState(false);
 
   const { username, selectedClients } = useUserContext();
 
@@ -25,7 +24,15 @@ const NavBar: React.FC = () => {
   const selectedCount = selectedClients.length;
 
   const getColor = (path: string) =>
-    location.pathname === path ? theme.colors.primary : "#0f0f0f";
+    location.pathname === path ? "#fff" : "#0f0f0f";
+
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setMobileOpen(false);
+      setClosing(false);
+    }, 400);
+  };
 
   return (
     <>
@@ -38,14 +45,12 @@ const NavBar: React.FC = () => {
           >
             Clientes
           </S.NavBarItem>
-
           <S.NavBarItem
             active={location.pathname === "/selected"}
             onClick={() => navigate("/selected")}
           >
             Clientes Selecionados ({selectedCount})
           </S.NavBarItem>
-
           <S.NavBarItem
             active={location.pathname === "/"}
             onClick={() => navigate("/")}
@@ -60,22 +65,24 @@ const NavBar: React.FC = () => {
         <S.HamburgerButton onClick={() => setMobileOpen(true)}>
           <HamburgerIcon fill="#0f0f0f" />
         </S.HamburgerButton>
-        <S.Logo src={Logo} alt="Logo" />
+        <S.MobileLogoTop src={Logo} alt="Logo" />
 
-        {mobileOpen && (
-          <S.MobileOverlay>
+        {(mobileOpen || closing) && (
+          <S.MobileContentWrapper $isOpen={mobileOpen} $closing={closing}>
             <S.MobileTop>
-              <S.BackButton onClick={() => setMobileOpen(false)}>
-                <BackArrowIcon fill="#0f0f0f" />
-              </S.BackButton>
+              <S.MobileLogo src={Logo} alt="Logo" />
             </S.MobileTop>
+
+            <S.BackButton onClick={handleClose}>
+              <BackArrowIcon fill="#fff" />
+            </S.BackButton>
 
             <S.MobileContent>
               <S.MobileNavBarItem
                 active={location.pathname === "/"}
                 onClick={() => {
                   navigate("/");
-                  setMobileOpen(false);
+                  handleClose();
                 }}
               >
                 <HomeIcon fill={getColor("/")} />
@@ -86,7 +93,7 @@ const NavBar: React.FC = () => {
                 active={location.pathname === "/users"}
                 onClick={() => {
                   navigate("/users");
-                  setMobileOpen(false);
+                  handleClose();
                 }}
               >
                 <UsersIcon fill={getColor("/users")} />
@@ -97,14 +104,14 @@ const NavBar: React.FC = () => {
                 active={location.pathname === "/selected"}
                 onClick={() => {
                   navigate("/selected");
-                  setMobileOpen(false);
+                  handleClose();
                 }}
               >
                 <SelectedUsersIcon fill={getColor("/selected")} />
                 Clientes Selecionados ({selectedCount})
               </S.MobileNavBarItem>
             </S.MobileContent>
-          </S.MobileOverlay>
+          </S.MobileContentWrapper>
         )}
       </S.MobileNavBar>
     </>
