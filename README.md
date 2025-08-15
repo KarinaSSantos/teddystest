@@ -137,3 +137,6 @@ docker-compose up prod
 **LinkedIn:** [Karina Gonçalves](https://www.linkedin.com/in/karina-g-dos-santos-705b2555/)  
 **GitHub:** [KarinaSSantos/teddystest](https://github.com/KarinaSSantos/teddystest)
 
+### Video de Apresentação 
+
+https://www.youtube.com/watch?v=rkXkS46jHxM
