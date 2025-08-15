@@ -3,7 +3,7 @@ import type { User } from "../../types/user";
 import * as S from "./styles";
 
 import editIcon from "../../assets/img/Card/pencil.svg";
-import deleteIcon from "../../assets/img/card/trash.svg";
+import deleteIcon from "../../assets/img/Card/trash.svg";
 import plusIcon from "../../assets/img/Card/plus.svg";
 import minusIcon from "../../assets/img/Card/minus.svg";
 
