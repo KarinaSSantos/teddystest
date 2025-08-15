@@ -73,17 +73,21 @@ src/
 # Clonar o repositório
 git clone https://github.com/KarinaSSantos/teddystest.git
 cd teddystest
+```
 
 # Instalar dependências
+```bash
 npm install
 # ou
 yarn install
+```
 
 # Rodar em modo desenvolvimento
+```bash
 npm run dev
 # ou
 yarn dev
-
+```
 
 ### 2. Rodando com Docker
 
@@ -91,16 +95,18 @@ yarn dev
 
 ```bash
 docker-compose up dev
+```
 
 
 #### Build sem rodar
 ```bash
 docker-compose build
+```
 
 #### Produção
 ```bash
 docker-compose up prod
-
+```
 
 ---
 
@@ -123,7 +129,6 @@ docker-compose up prod
 - Seleção de clientes para contabilização  
 - SPA totalmente responsiva  
 - Hot reload no desenvolvimento via Docker  
-
 ---
 
 ### 📬 Contato
@@ -131,3 +136,4 @@ docker-compose up prod
 **Autor:** Karina Gonçalves dos Santos  
 **LinkedIn:** [Karina Gonçalves](https://www.linkedin.com/in/karina-g-dos-santos-705b2555/)  
 **GitHub:** [KarinaSSantos/teddystest](https://github.com/KarinaSSantos/teddystest)
+
