@@ -4,7 +4,7 @@
 **LinkedIn:** [Karina Gonçalves](https://www.linkedin.com/in/karina-g-dos-santos-705b2555/)  
 **GitHub:** [KarinaSSantos/teddystest](https://github.com/KarinaSSantos/teddystest)
 
-**Vercel:** [teddystest](https://teddystest.vercel.app/users)
+**Vercel:** [teddystest](https://teddystest.vercel.app/)
 ---
 
 ## 📌 Descrição do Projeto
