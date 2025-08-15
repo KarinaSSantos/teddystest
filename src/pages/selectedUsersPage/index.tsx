@@ -65,7 +65,6 @@ export default function SelectedUsersPage() {
 
   return (
     <S.Container>
-      {/* Controles de busca e filtro */}
       <S.Controls>
         <SearchBar
           value={filter}
@@ -77,7 +76,6 @@ export default function SelectedUsersPage() {
 
       <h2>Clientes Selecionados</h2>
 
-      {/* Lista de cards */}
       <Container>
         {sortedUsers.map((user) => (
           <UserCard

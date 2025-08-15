@@ -4,10 +4,9 @@ export const Container = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   margin: 0 auto 20px auto;
   max-width: 90%;
-  margin-top: 2rem;
+  margin-top: 4rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 
   @media (min-width: 768px) {
     padding: 20px 0;

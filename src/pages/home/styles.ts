@@ -34,11 +34,6 @@ export const Input = styled.input`
   border-radius: 0.25rem;
   border: 2px solid ${({ theme }) => theme.colors.border};
   transition: border-color 0.2s ease-in-out;
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    outline-offset: 2px;
-  }
 `;
 
 export const Button = styled.button`

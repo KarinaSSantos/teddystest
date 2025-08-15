@@ -192,7 +192,6 @@ export default function UsersPage() {
         onPageChange={setPage}
       />
 
-      {/* Modal criar/editar */}
       <ClientModal
         visible={clientModalVisible}
         onClose={() => setClientModalVisible(false)}
@@ -211,7 +210,6 @@ export default function UsersPage() {
         mode={clientToEdit ? "edit" : "create"}
       />
 
-      {/* Modal excluir */}
       <ConfirmModal
         visible={confirmDeleteVisible}
         title="Excluir cliente"
