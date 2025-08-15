@@ -1,18 +1,29 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../contexts/UserContext";
+import { useUsers } from "../../hooks/useUsers";
 import * as S from "./styles";
 
 const Home: React.FC = () => {
   const [name, setName] = useState("");
   const navigate = useNavigate();
   const { setUsername } = useUserContext();
+  const { createMutation } = useUsers(1, 16);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!name.trim()) return alert("Digite um nome");
 
-    setUsername(name.trim());
-    navigate("/users", { state: { newClientName: name.trim() } });
+    try {
+      await createMutation.mutateAsync({
+        name: name.trim(),
+        salary: 0,
+        companyValuation: 0,
+      });
+      setUsername(name.trim());
+      navigate("/users");
+    } catch (err: any) {
+      alert("Erro ao criar usuário: " + (err?.message ?? "Erro desconhecido"));
+    }
   };
 
   return (
